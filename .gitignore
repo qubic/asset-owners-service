@@ -1,0 +1,27 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# universe import directories
+import/
+imported/
+
+# maven
+*.versionsBackup
+
+# local property files
+flyway.conf
+application-local.properties
+
+# log files
+*.log
+*.log.*.gz
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
