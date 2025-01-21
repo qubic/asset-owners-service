@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.qubic.aos.api.db.domain.AssetOwner;
 import org.qubic.aos.api.owners.UniverseCsvImporter;
+import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
@@ -28,15 +30,16 @@ public class UniverseImportScheduler {
     private static final String IMPORT_DIR_NAME = "import";
     private static final String IMPORTED_DIR_NAME = "imported";
 
-
     private final UniverseCsvImporter csvImporter;
+    private final CacheManager cacheManager;
 
-    public UniverseImportScheduler(UniverseCsvImporter csvImporter) throws IOException {
+    public UniverseImportScheduler(UniverseCsvImporter csvImporter, CacheManager cacheManager) throws IOException {
         this.csvImporter = csvImporter;
+        this.cacheManager = cacheManager;
         Path importDir = Files.createDirectories(Path.of(IMPORT_DIR_NAME));
-        log.info("Import directory: {}", importDir);
+        log.info("Import directory name: [{}]", importDir);
         Path importedDir = Files.createDirectories(Path.of(IMPORTED_DIR_NAME));
-        log.info("Imported directory: {}", importedDir);
+        log.info("Imported directory name: [{}[", importedDir);
     }
 
     @Scheduled(cron = "${scheduler.import.universe.cron}")
@@ -54,11 +57,19 @@ public class UniverseImportScheduler {
                 log.info("Imported [{}] asset owners.", assetOwners.size());
                 Path moved = Files.move(importFilePath, Path.of(IMPORTED_DIR_NAME).resolve(String.format("%s.%d", importFilePath.getFileName(), System.currentTimeMillis())), REPLACE_EXISTING);
                 log.info("Moved imported file to [{}].", moved);
+                evictAllCaches();
             }
         } else {
             log.debug("No universe file to import.");
         }
 
+    }
+
+    protected void evictAllCaches() {
+        for(String name : cacheManager.getCacheNames()){
+            log.info("Evicting cache [{}].", name);
+            Objects.requireNonNull(cacheManager.getCache(name)).clear();
+        }
     }
 
 }

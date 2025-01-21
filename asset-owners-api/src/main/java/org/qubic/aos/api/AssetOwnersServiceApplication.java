@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Slf4j
 @SpringBootApplication
-public class QxServiceApplication {
+public class AssetOwnersServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(QxServiceApplication.class, args);
+        SpringApplication.run(AssetOwnersServiceApplication.class, args);
     }
 
 }

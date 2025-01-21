@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.qubic.aos.api.db.domain.Asset;
 import org.springframework.cache.annotation.Cacheable;
 
-import static org.qubic.aos.api.redis.ApplicationCacheManager.CACHE_KEY_ASSET;
-import static org.qubic.aos.api.redis.ApplicationCacheManager.CACHE_NAME_GET_OR_CREATE_ASSET;
+import static org.qubic.aos.api.redis.AssetCacheManager.CACHE_KEY_ASSET;
+import static org.qubic.aos.api.redis.AssetCacheManager.CACHE_NAME_GET_ASSET;
 
 @Slf4j
 public class AssetsDbService {
@@ -17,7 +17,7 @@ public class AssetsDbService {
     }
 
     // we cache because this method gets called often for universe imports
-    @Cacheable(value = CACHE_NAME_GET_OR_CREATE_ASSET, key = CACHE_KEY_ASSET)
+    @Cacheable(value = CACHE_NAME_GET_ASSET, key = CACHE_KEY_ASSET)
     public Asset getOrCreateAsset(String issuer, String asset) {
         log.debug("Getting asset [{}/{}]...", issuer, asset);
         return assetsRepository.findByIssuerAndName(issuer, asset)

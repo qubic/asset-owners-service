@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.qubic.aos.api.redis.ApplicationCacheManager.CACHE_KEY_ASSET;
-import static org.qubic.aos.api.redis.ApplicationCacheManager.CACHE_NAME_ASSET_OWNERS;
+import static org.qubic.aos.api.redis.AssetCacheManager.CACHE_KEY_ASSET;
+import static org.qubic.aos.api.redis.AssetCacheManager.CACHE_NAME_ASSET_OWNERS;
 
 @CrossOrigin
 @Validated

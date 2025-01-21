@@ -1,7 +1,7 @@
 package org.qubic.aos.api.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.qubic.aos.api.redis.ApplicationCacheManager;
+import org.qubic.aos.api.redis.AssetCacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,15 +23,12 @@ public class RedisConfiguration {
     RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory, Environment environment) {
 
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-        String[] caches = environment.getProperty("qx.caches", String[].class, new String[0]);
+        String[] caches = environment.getProperty("aos.caches", String[].class, new String[0]);
         for (String cache : caches) {
-            Duration ttl = environment.getProperty(String.format("qx.cache.%s.ttl", cache), Duration.class);
-            if (ttl == null) {
-                log.warn("Missing cache configuration for [{}]", cache);
-            } else {
-                log.info("Overriding defaults for cache [{}]. TTL: [{}]", cache, ttl);
-                cacheConfigurations.put(cache, RedisCacheConfiguration.defaultCacheConfig().entryTtl(ttl));
-            }
+            Duration customTtl = environment.getRequiredProperty(String.format("aos.cache.%s.ttl", cache), Duration.class);
+            String cacheName = environment.getRequiredProperty(String.format("aos.cache.%s.name", cache), String.class);
+            log.info("Overriding defaults for cache [{}]. TTL: [{}]", cacheName, customTtl);
+            cacheConfigurations.put(cacheName, RedisCacheConfiguration.defaultCacheConfig().entryTtl(customTtl));
         }
 
         Duration defaultTtl = environment.getRequiredProperty("aos.cache.default.ttl", Duration.class);
@@ -46,8 +43,8 @@ public class RedisConfiguration {
     }
 
     @Bean
-    ApplicationCacheManager serviceCacheManager(RedisCacheManager cacheManager) {
-        return new ApplicationCacheManager(cacheManager);
+    AssetCacheManager serviceCacheManager(RedisCacheManager cacheManager) {
+        return new AssetCacheManager(cacheManager);
     }
 
 }

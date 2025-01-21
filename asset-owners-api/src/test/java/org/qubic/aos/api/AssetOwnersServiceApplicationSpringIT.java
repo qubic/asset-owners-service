@@ -2,7 +2,7 @@ package org.qubic.aos.api;
 
 import org.junit.jupiter.api.Test;
 
-class QxServiceApplicationSpringIT extends AbstractSpringIntegrationTest {
+class AssetOwnersServiceApplicationSpringIT extends AbstractSpringIntegrationTest {
 
     @SuppressWarnings("EmptyMethod")
     @Test
