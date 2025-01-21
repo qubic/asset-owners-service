@@ -29,7 +29,6 @@ public class AssetCacheManager {
         this.cacheManager = cacheManager;
     }
 
-    // TODO use and test
     public void clearAssetOwnersCache(String issuer, String name) {
         log.debug("Evicting cache for asset with issuer [{}] and name [{}].", issuer, name);
         Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_OWNERS)).evict(String.format("%s:%s", issuer, name));
