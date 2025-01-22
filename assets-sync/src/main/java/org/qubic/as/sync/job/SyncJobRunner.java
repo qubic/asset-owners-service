@@ -33,7 +33,7 @@ public class SyncJobRunner {
                     .retryWhen(getRetrySpec(properties.getRetryInterval()))
                     .doOnTerminate(() -> log.debug("Sync run finished. Next run in [{}].", properties.getSleepInterval()))
                     .repeat(properties.getRepeats() < 0 ? Long.MAX_VALUE : properties.getRepeats())
-                    .doOnNext(x -> log.debug("Repeat..."));
+                    .doOnComplete(() -> log.info("Sync job completed."));
         } else {
             log.info("Sync job is disabled.");
             return Flux.empty();

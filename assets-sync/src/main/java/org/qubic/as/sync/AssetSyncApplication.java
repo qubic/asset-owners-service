@@ -19,11 +19,11 @@ public class AssetSyncApplication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        jobRunner.loop().subscribe(
-                x -> log.info("On next received from sync job: {}", x),
-                err -> log.error("Finished with error.", err),
-                () -> log.info("Sync finished (completed).")
-        );
+        jobRunner.loop()
+                .subscribe(
+                        x -> { /* do nothing */ },
+                        err -> log.error("Finished with error.", err)
+                );
     }
 
     public static void main(String[] args) {
