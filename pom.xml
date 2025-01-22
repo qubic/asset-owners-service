@@ -39,6 +39,7 @@
 
     <modules>
         <module>assets-api</module>
+        <module>assets-sync</module>
     </modules>
 
     <dependencyManagement>
