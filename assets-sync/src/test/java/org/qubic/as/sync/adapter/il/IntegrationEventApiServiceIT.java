@@ -2,7 +2,6 @@ package org.qubic.as.sync.adapter.il;
 
 import io.micrometer.core.instrument.util.IOUtils;
 import org.junit.jupiter.api.Test;
-import org.qubic.as.sync.domain.EpochAndTick;
 import org.qubic.as.sync.domain.EventHeader;
 import org.qubic.as.sync.domain.TransactionEvent;
 import org.qubic.as.sync.domain.TransactionEvents;
@@ -76,10 +75,9 @@ class IntegrationEventApiServiceIT extends AbstractIntegrationApiTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(responseJson));
 
-        EpochAndTick tickInfo = apiClient.getLastProcessedTick().block();
-        assertThat(tickInfo).isNotNull();
-        assertThat(tickInfo.tickNumber()).isEqualTo(17127356);
-        assertThat(tickInfo.epoch()).isEqualTo(134);
+        Long tickNumber = apiClient.getLastProcessedTick().block();
+        assertThat(tickNumber).isNotNull();
+        assertThat(tickNumber).isEqualTo(17127356);
     }
 
     private static void assertTransactionEvent(TransactionEvent transactionEvent, String data, String eventId, String eventDigest) {

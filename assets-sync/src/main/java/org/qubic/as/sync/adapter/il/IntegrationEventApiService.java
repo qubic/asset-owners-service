@@ -5,7 +5,7 @@ import org.qubic.as.sync.adapter.EventApiService;
 import org.qubic.as.sync.adapter.exception.EmptyResultException;
 import org.qubic.as.sync.adapter.il.domain.IlEventStatusResponse;
 import org.qubic.as.sync.adapter.il.domain.IlTickEvents;
-import org.qubic.as.sync.domain.EpochAndTick;
+import org.qubic.as.sync.adapter.il.domain.IlEpochAndTick;
 import org.qubic.as.sync.domain.TransactionEvents;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -40,12 +40,13 @@ public class IntegrationEventApiService implements EventApiService {
     }
 
     @Override
-    public Mono<EpochAndTick> getLastProcessedTick() {
+    public Mono<Long> getLastProcessedTick() {
         return webClient.get()
                 .uri(BASE_PATH + "/status")
                 .retrieve()
                 .bodyToMono(IlEventStatusResponse.class)
                 .map(IlEventStatusResponse::lastProcessedTick)
+                .map(IlEpochAndTick::tickNumber)
                 .switchIfEmpty(Mono.error(new EmptyResultException("Could not get event status.")))
                 .doOnError(e -> log.error("Error getting last processed tick: {}", e.getMessage()))
                 .retryWhen(retrySpec());

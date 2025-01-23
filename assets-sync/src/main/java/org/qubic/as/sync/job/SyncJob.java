@@ -3,7 +3,6 @@ package org.qubic.as.sync.job;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.as.sync.adapter.CoreApiService;
 import org.qubic.as.sync.adapter.EventApiService;
-import org.qubic.as.sync.domain.EpochAndTick;
 import org.qubic.as.sync.domain.TickInfo;
 import org.qubic.as.sync.repository.TickRepository;
 import reactor.core.publisher.Flux;
@@ -65,23 +64,22 @@ public class SyncJob {
         }
     }
 
-
-    private Mono<Tuple2<Long, Long>> calculateStartAndEndTick(Tuple2<TickInfo, EpochAndTick> tuple) {
+    private Mono<Tuple2<Long, Long>> calculateStartAndEndTick(Tuple2<TickInfo, Long> tuple) {
         return tickRepository.getLatestSyncedTick()
                 .map(latestStoredTick -> latestStoredTick < tuple.getT1().initialTick()
                         ? tuple.getT1().initialTick()
                         : latestStoredTick + 1)
-                // take the lowest common tick where event data is available (most probably always getT2().tickNumber()
-                .map(startTick -> Tuples.of(startTick, Math.min(tuple.getT1().tick(), tuple.getT2().tickNumber())));
+                // take the lowest common tick where event data is available (most probably always getT2())
+                .map(startTick -> Tuples.of(startTick, Math.min(tuple.getT1().tick(), tuple.getT2())));
     }
 
-    private Mono<Tuple2<TickInfo, EpochAndTick>> getLatestAvailableTick() {
+    private Mono<Tuple2<TickInfo, Long>> getLatestAvailableTick() {
         return Mono.zip(coreService.getTickInfo(), eventService.getLastProcessedTick())
                 .doOnNext(tuple -> {
                     // log if there is a 'larger' gap between current tick and event service
-                    if (Math.abs(tuple.getT1().tick() - tuple.getT2().tickNumber()) > 5) {
+                    if (Math.abs(tuple.getT1().tick() - tuple.getT2()) > 5) {
                         log.info("Current tick: [{}]. Events are available until tick [{}].",
-                                tuple.getT1().tick(), tuple.getT2().tickNumber());
+                                tuple.getT1().tick(), tuple.getT2());
                     }
                 });
     }
