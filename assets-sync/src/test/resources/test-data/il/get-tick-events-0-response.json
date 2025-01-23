@@ -1,0 +1,37 @@
+{
+  "latestTick": 18636999,
+  "changeEvents": [
+    {
+      "sourceId": "GIEXGSAGFPAPMCHKZQJRMIUWPIDDFPHHDPJHQOQLPBEMJHWJAKHUXNEECSSK",
+      "destinationId": "MMXGLHFLKCROMEJSSDYIMABZJAXBICQBLYKSGXAQJGUDOKMBSTPQPAREFBML",
+      "issuerId": "QCAPWMYRSHLBJHSTTZQVCIBARVOASKDENASAKNOBRGPFWWKRCUVUAXYEZVOG",
+      "name": "QCAP",
+      "numberOfShares": "20",
+      "transactionHash": "pnanppagyakeofwxvgiqmiokuvodhomhyyhgjckekajxtjgcywmmsbzaesfo",
+      "tick": 18636419,
+      "eventType": 2
+    },
+    {
+      "sourceId": "GIEXGSAGFPAPMCHKZQJRMIUWPIDDFPHHDPJHQOQLPBEMJHWJAKHUXNEECSSK",
+      "destinationId": "MMXGLHFLKCROMEJSSDYIMABZJAXBICQBLYKSGXAQJGUDOKMBSTPQPAREFBML",
+      "issuerId": "QCAPWMYRSHLBJHSTTZQVCIBARVOASKDENASAKNOBRGPFWWKRCUVUAXYEZVOG",
+      "name": "QCAP",
+      "numberOfShares": "20",
+      "transactionHash": "pnanppagyakeofwxvgiqmiokuvodhomhyyhgjckekajxtjgcywmmsbzaesfo",
+      "tick": 18636419,
+      "eventType": 3
+    }
+  ],
+  "issuanceEvents": [
+    {
+      "issuerId": "QCAPWMYRSHLBJHSTTZQVCIBARVOASKDENASAKNOBRGPFWWKRCUVUAXYEZVOG",
+      "name": "QCAP",
+      "numberOfShares": "21000000",
+      "unitOfMeasurement": "AAAAAAAAAA==",
+      "numberOfDecimalPlaces": 0,
+      "transactionHash": "roovqujtgcrnvfmduefbsfjavrgfajiqhpyarxhjjdqdmydnfszrgbcbiwso",
+      "tick": 18636419,
+      "eventType": 1
+    }
+  ]
+}

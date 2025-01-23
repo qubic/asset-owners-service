@@ -35,7 +35,7 @@ abstract class AbstractIntegrationApiTest {
     protected void assertRequest(String expectedPath) {
         RecordedRequest request = integrationLayer.takeRequest(1, TimeUnit.SECONDS);
         assertThat(request).isNotNull();
-        assertThat(request.getPath()).isEqualTo(expectedPath);
+        assertThat(request.getPath()).contains(expectedPath);
     }
 
     @BeforeEach

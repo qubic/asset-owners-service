@@ -22,7 +22,7 @@ class SyncJobTest {
     void sync_givenNoNewTick_thenDoNotSync() {
         TickInfo currentTickInfo = new TickInfo(1, 3459, 3456);
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
-        when(eventService.getLastProcessedTick()).thenReturn(Mono.just(3459L));
+        when(eventService.getLatestTick()).thenReturn(Mono.just(3459L));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(3459L));
 
         StepVerifier.create(syncJob.sync())
@@ -30,7 +30,7 @@ class SyncJobTest {
 
         verify(coreService).getTickInfo();
         verify(tickRepository).getLatestSyncedTick();
-        verify(eventService).getLastProcessedTick();
+        verify(eventService).getLatestTick();
         verifyNoMoreInteractions(tickRepository, coreService, eventService);
     }
 
@@ -39,7 +39,7 @@ class SyncJobTest {
         TickInfo currentTickInfo = new TickInfo(1, 3460, 0);
 
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
-        when(eventService.getLastProcessedTick()).thenReturn(Mono.just(3460L));
+        when(eventService.getLatestTick()).thenReturn(Mono.just(3460L));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(3458L));
 
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
@@ -56,7 +56,7 @@ class SyncJobTest {
         TickInfo currentTickInfo = new TickInfo(1, 3460, 0);
 
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
-        when(eventService.getLastProcessedTick()).thenReturn(Mono.just(3460L));
+        when(eventService.getLatestTick()).thenReturn(Mono.just(3460L));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(3455L));
 
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
@@ -79,7 +79,7 @@ class SyncJobTest {
         TickInfo currentTickInfo = new TickInfo(1, 3461, 0); // latest tick 3461
 
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
-        when(eventService.getLastProcessedTick()).thenReturn(Mono.just(3460L)); // events until tick 3460
+        when(eventService.getLatestTick()).thenReturn(Mono.just(3460L)); // events until tick 3460
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(3458L));
 
         when(tickRepository.setLatestSyncedTick(anyLong())).thenReturn(Mono.just(true));
@@ -94,7 +94,7 @@ class SyncJobTest {
     @Test
     void sync_givenError_thenAbortRun() {
         when(coreService.getTickInfo()).thenReturn(Mono.error(new EmptyResultException("test")));
-        when(eventService.getLastProcessedTick()).thenReturn(Mono.just(3460L));
+        when(eventService.getLatestTick()).thenReturn(Mono.just(3460L));
 
         StepVerifier.create(syncJob.sync().log())
                 .expectError(EmptyResultException.class)

@@ -6,6 +6,7 @@ import org.qubic.as.sync.adapter.CoreApiService;
 import org.qubic.as.sync.adapter.il.IntegrationCoreApiService;
 import org.qubic.as.sync.adapter.il.IntegrationEventApiService;
 import org.qubic.as.sync.adapter.il.mapping.IlCoreMapper;
+import org.qubic.as.sync.adapter.il.mapping.IlEventMapper;
 import org.qubic.as.sync.properties.IntegrationClientProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -56,8 +57,8 @@ public class IntegrationLayerConfig {
     }
 
     @Bean
-    IntegrationEventApiService integrationEventApiService(@Qualifier("eventClient") WebClient webClient) {
-        return new IntegrationEventApiService(webClient);
+    IntegrationEventApiService integrationEventApiService(@Qualifier("eventClient") WebClient webClient, IlEventMapper eventMapper) {
+        return new IntegrationEventApiService(webClient, eventMapper);
     }
 
     @Bean
@@ -76,6 +77,7 @@ public class IntegrationLayerConfig {
                 .scheme(properties.getScheme())
                 .host(properties.getHost())
                 .port(StringUtils.stripToNull(properties.getPort()))
+                .path(StringUtils.stripToNull(properties.getPath()))
                 .build()
                 .toUri();
     }

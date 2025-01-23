@@ -125,6 +125,13 @@
                 </configuration>
             </plugin>
 
+            <!-- no need to install the app jar -->
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

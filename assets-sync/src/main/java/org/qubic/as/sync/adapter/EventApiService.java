@@ -1,13 +1,11 @@
 package org.qubic.as.sync.adapter;
 
-import org.qubic.as.sync.domain.TransactionEvents;
+import org.qubic.as.sync.domain.AssetEvents;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 public interface EventApiService {
 
-    Mono<List<TransactionEvents>> getTickEvents(long tick);
-    Mono<Long> getLastProcessedTick();
+    Mono<AssetEvents> getTickEvents(long tick);
+    Mono<Long> getLatestTick();
 
 }

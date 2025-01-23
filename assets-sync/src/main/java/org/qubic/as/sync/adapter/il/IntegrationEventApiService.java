@@ -3,61 +3,54 @@ package org.qubic.as.sync.adapter.il;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.as.sync.adapter.EventApiService;
 import org.qubic.as.sync.adapter.exception.EmptyResultException;
-import org.qubic.as.sync.adapter.il.domain.IlEventStatusResponse;
-import org.qubic.as.sync.adapter.il.domain.IlTickEvents;
-import org.qubic.as.sync.adapter.il.domain.IlEpochAndTick;
-import org.qubic.as.sync.domain.TransactionEvents;
+import org.qubic.as.sync.adapter.il.domain.IlAssetEvents;
+import org.qubic.as.sync.adapter.il.mapping.IlEventMapper;
+import org.qubic.as.sync.domain.AssetEvents;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
 
 import java.time.Duration;
-import java.util.List;
 
 @Slf4j
 public class IntegrationEventApiService implements EventApiService {
 
     private static final int NUM_RETRIES = 3;
-    private static final String BASE_PATH = "/v1/events";
     private final WebClient webClient;
+    private final IlEventMapper mapper;
 
-    public IntegrationEventApiService(WebClient webClient) {
+    public IntegrationEventApiService(WebClient webClient, IlEventMapper mapper) {
         this.webClient = webClient;
+        this.mapper = mapper;
     }
 
     @Override
-    public Mono<List<TransactionEvents>> getTickEvents(long tick) {
-        return webClient.post()
-                .uri(BASE_PATH + "/getTickEvents")
-                .bodyValue(tickPayloadBody(tick))
+    public Mono<AssetEvents> getTickEvents(long tick) {
+        return webClient.get()
+                .uri("/v1/ticks/{tick}/events/assets", tick)
                 .retrieve()
-                .bodyToMono(IlTickEvents.class)
-                .map(IlTickEvents::txEvents)
+                .bodyToMono(IlAssetEvents.class)
+                .map(mapper::map)
                 .switchIfEmpty(Mono.error(emptyGetEventsResult(tick)))
                 .doOnError(e -> log.error("Error getting tick events: {}", e.getMessage()))
                 .retryWhen(retrySpec());
     }
 
     @Override
-    public Mono<Long> getLastProcessedTick() {
+    public Mono<Long> getLatestTick() {
         return webClient.get()
-                .uri(BASE_PATH + "/status")
+                .uri("/v1/ticks/0/events/assets") // call dummy tick number 0
                 .retrieve()
-                .bodyToMono(IlEventStatusResponse.class)
-                .map(IlEventStatusResponse::lastProcessedTick)
-                .map(IlEpochAndTick::tickNumber)
-                .switchIfEmpty(Mono.error(new EmptyResultException("Could not get event status.")))
+                .bodyToMono(IlAssetEvents.class)
+                .map(IlAssetEvents::latestTick)
+                .switchIfEmpty(Mono.error(new EmptyResultException("Empty result getting latest event tick.")))
                 .doOnError(e -> log.error("Error getting last processed tick: {}", e.getMessage()))
                 .retryWhen(retrySpec());
     }
 
     private static RetryBackoffSpec retrySpec() {
         return Retry.backoff(NUM_RETRIES, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
-    }
-
-    private static String tickPayloadBody(long tick) {
-        return String.format("{\"tick\":%d}", tick);
     }
 
     private static EmptyResultException emptyGetEventsResult(long tick) {

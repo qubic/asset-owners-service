@@ -2,9 +2,9 @@ package org.qubic.as.sync.adapter.il;
 
 import io.micrometer.core.instrument.util.IOUtils;
 import org.junit.jupiter.api.Test;
-import org.qubic.as.sync.domain.EventHeader;
-import org.qubic.as.sync.domain.TransactionEvent;
-import org.qubic.as.sync.domain.TransactionEvents;
+import org.qubic.as.sync.domain.AssetChangeEvent;
+import org.qubic.as.sync.domain.AssetEvents;
+import org.qubic.as.sync.domain.AssetIssuanceEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,15 +18,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class IntegrationEventApiServiceIT extends AbstractIntegrationApiTest {
 
-    private static final int TICK = 16317860;
-
     @Autowired
     private IntegrationEventApiService apiClient;
 
     @Test
     void getTickEvents() {
         String responseJson = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
-                "/testdata/il/get-tick-events-0-response.json"
+                "/test-data/il/get-tick-events-0-response.json"
         )), StandardCharsets.UTF_8);
 
         prepareResponse(response -> response
@@ -34,40 +32,49 @@ class IntegrationEventApiServiceIT extends AbstractIntegrationApiTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(responseJson));
 
-        List<TransactionEvents> transactionEvents = apiClient.getTickEvents(TICK).block();
-        assertThat(transactionEvents).hasSize(2);
+        AssetEvents assetEvents = apiClient.getTickEvents(123456).block();
+        assertThat(assetEvents).isNotNull();
+        assertThat(assetEvents.latestTick()).isEqualTo(18636999);
+        List<AssetChangeEvent> transferEvents = assetEvents.transferEvents();
+        List<AssetIssuanceEvent> issuanceEvents = assetEvents.issuanceEvents();
 
-        TransactionEvents transactionEvents1 = transactionEvents.getFirst();
-        assertThat(transactionEvents1.txId()).isEqualTo("izohgnpbyxczccpjvxrsseadaolfuwskpomivtwlhgiuarildsyoxxradhib");
-        assertThat(transactionEvents1.events()).hasSize(2);
-        assertTransactionEvent(transactionEvents1.events().getFirst(),
-                "mYYyiOE+5Q5akQnPqfVWH3yzhna3SqfR741fJr3dNxsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBCDwAAAAAA",
-                "78991",
-                "11486275204490993574");
-        assertTransactionEvent(transactionEvents1.events().getLast(),
-                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACZhjKI4T7lDlqRCc+p9VYffLOGdrdKp9HvjV8mvd03G0BCDwAAAAAA",
-                "78992",
-                "8574750727124548928");
+        assertThat(transferEvents).hasSize(2);
+        assertThat(issuanceEvents).hasSize(1);
 
-        TransactionEvents transactionEvents2 = transactionEvents.getLast();
-        assertThat(transactionEvents2.txId()).isEqualTo("nnqvizkgfdlscbepwfabkatcybihvcgxlctqmlmwfciumjkersuvheiajpib");
-        assertThat(transactionEvents2.events()).hasSize(2);
-        assertTransactionEvent(transactionEvents2.events().getFirst(),
-                "vgOheQqQ4aQZ270SGUyQI7ahOElchrLgMK0yhSqTi0MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBCDwAAAAAA",
-                "78993",
-                "2366547716797884857");
-        assertTransactionEvent(transactionEvents2.events().getLast(),
-                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC+A6F5CpDhpBnbvRIZTJAjtqE4SVyGsuAwrTKFKpOLQ0BCDwAAAAAA",
-                "78994",
-                "14965835435466498310");
+        assertThat(transferEvents).containsExactly(
+                new AssetChangeEvent("GIEXGSAGFPAPMCHKZQJRMIUWPIDDFPHHDPJHQOQLPBEMJHWJAKHUXNEECSSK",
+                        "MMXGLHFLKCROMEJSSDYIMABZJAXBICQBLYKSGXAQJGUDOKMBSTPQPAREFBML",
+                        "QCAPWMYRSHLBJHSTTZQVCIBARVOASKDENASAKNOBRGPFWWKRCUVUAXYEZVOG",
+                        "QCAP",
+                        20,
+                        "pnanppagyakeofwxvgiqmiokuvodhomhyyhgjckekajxtjgcywmmsbzaesfo",
+                        18636419,
+                        2),
+                new AssetChangeEvent("GIEXGSAGFPAPMCHKZQJRMIUWPIDDFPHHDPJHQOQLPBEMJHWJAKHUXNEECSSK",
+                        "MMXGLHFLKCROMEJSSDYIMABZJAXBICQBLYKSGXAQJGUDOKMBSTPQPAREFBML",
+                        "QCAPWMYRSHLBJHSTTZQVCIBARVOASKDENASAKNOBRGPFWWKRCUVUAXYEZVOG",
+                        "QCAP",
+                        20,
+                        "pnanppagyakeofwxvgiqmiokuvodhomhyyhgjckekajxtjgcywmmsbzaesfo",
+                        18636419,
+                        3)
+        );
 
-        assertRequest("/v1/events/getTickEvents");
+        assertThat(issuanceEvents).containsExactly(
+                new AssetIssuanceEvent("QCAPWMYRSHLBJHSTTZQVCIBARVOASKDENASAKNOBRGPFWWKRCUVUAXYEZVOG",
+                        "QCAP",
+                        21000000,
+                        "roovqujtgcrnvfmduefbsfjavrgfajiqhpyarxhjjdqdmydnfszrgbcbiwso",
+                        18636419)
+        );
+
+        assertRequest("/v1/ticks/123456/events/assets");
     }
 
     @Test
-    void getEventProcessingStatus() {
+    void getLatestProcessedTick() {
         String responseJson = IOUtils.toString(Objects.requireNonNull(getClass().getResourceAsStream(
-                "/testdata/il/get-tick-status-response.json"
+                "/test-data/il/get-tick-events-0-response.json"
         )), StandardCharsets.UTF_8);
 
         prepareResponse(response -> response
@@ -75,20 +82,11 @@ class IntegrationEventApiServiceIT extends AbstractIntegrationApiTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setBody(responseJson));
 
-        Long tickNumber = apiClient.getLastProcessedTick().block();
+        Long tickNumber = apiClient.getLatestTick().block();
         assertThat(tickNumber).isNotNull();
-        assertThat(tickNumber).isEqualTo(17127356);
-    }
+        assertThat(tickNumber).isEqualTo(18636999);
 
-    private static void assertTransactionEvent(TransactionEvent transactionEvent, String data, String eventId, String eventDigest) {
-        assertThat(transactionEvent.eventType()).isEqualTo(0);
-        assertThat(transactionEvent.eventSize()).isEqualTo(72);
-        assertThat(transactionEvent.eventData()).isEqualTo(data);
-        EventHeader header = transactionEvent.header();
-        assertThat(header.epoch()).isEqualTo(129);
-        assertThat(header.tick()).isEqualTo(TICK);
-        assertThat(header.eventId()).isEqualTo(eventId);
-        assertThat(header.eventDigest()).isEqualTo(eventDigest);
+        assertRequest("/v1/ticks/0/events/assets");
     }
 
 }
