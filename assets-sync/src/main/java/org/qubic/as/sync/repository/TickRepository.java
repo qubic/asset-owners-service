@@ -9,8 +9,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class TickRepository {
 
-    public static final String KEY_TICK_SYNCED_LATEST = "tick:synced:latest"; // key value
-    public static final String KEY_TICKS_PROCESSED = "ticks:processed"; // set
+    public static final String KEY_TICK_SYNCED_LATEST = "assets-sync:tick:synced"; // key value
+    public static final String KEY_TICKS_PROCESSED = "assets-sync:ticks:processed"; // set
 
     private final Range<Long> disposeRange;
     private final ReactiveStringRedisTemplate redisStringTemplate;

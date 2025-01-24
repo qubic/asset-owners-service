@@ -1,13 +1,17 @@
 package org.qubic.as.sync.job;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qubic.as.sync.adapter.CoreApiService;
 import org.qubic.as.sync.adapter.EventApiService;
 import org.qubic.as.sync.adapter.exception.EmptyResultException;
+import org.qubic.as.sync.domain.AssetEvents;
 import org.qubic.as.sync.domain.TickInfo;
 import org.qubic.as.sync.repository.TickRepository;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -16,7 +20,14 @@ class SyncJobTest {
     private final CoreApiService coreService = mock();
     private final EventApiService eventService = mock();
     private final TickRepository  tickRepository = mock();
-    private final SyncJob syncJob = new SyncJob(coreService, eventService, tickRepository);
+    private final EventsProcessor eventsProcessor = mock();
+    private final SyncJob syncJob = new SyncJob(coreService, eventService, tickRepository, eventsProcessor);
+
+    @BeforeEach
+    void initMocks() {
+        when(eventService.getTickEvents(anyLong())).thenReturn(Mono.just(new AssetEvents(42, List.of(), List.of())));
+        when(eventsProcessor.process(anyLong(), any(AssetEvents.class))).then(args -> Mono.just(args.getArgument(0)));
+    }
 
     @Test
     void sync_givenNoNewTick_thenDoNotSync() {
@@ -39,11 +50,11 @@ class SyncJobTest {
         TickInfo currentTickInfo = new TickInfo(1, 3460, 0);
 
         when(coreService.getTickInfo()).thenReturn(Mono.just(currentTickInfo));
-        when(eventService.getLatestTick()).thenReturn(Mono.just(3460L));
         when(tickRepository.getLatestSyncedTick()).thenReturn(Mono.just(3458L));
+        when(eventService.getLatestTick()).thenReturn(Mono.just(3460L));
 
         when(tickRepository.isProcessedTick(anyLong())).thenReturn(Mono.just(false));
-        when(tickRepository.addToProcessedTicks(anyLong())).thenReturn(Mono.just(true));
+        when(tickRepository.addToProcessedTicks(3459L)).thenReturn(Mono.just(true));
         when(tickRepository.setLatestSyncedTick(3459L)).thenReturn(Mono.just(true));
 
         StepVerifier.create(syncJob.sync().log())

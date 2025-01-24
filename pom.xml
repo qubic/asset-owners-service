@@ -38,12 +38,19 @@
     </properties>
 
     <modules>
+        <module>assets-common</module>
         <module>assets-api</module>
         <module>assets-sync</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>org.qubic</groupId>
+                <artifactId>assets-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>at.qubic</groupId>

@@ -29,6 +29,10 @@ class TickRepositorySpringIT extends AbstractRedisTest {
         StepVerifier.create(tickRepository.setLatestSyncedTick(42))
                 .expectNext(true)
                 .verifyComplete();
+
+        StepVerifier.create(redisStringTemplate.opsForValue().get("assets-sync:tick:synced"))
+                .expectNext("42")
+                .verifyComplete();
     }
 
     @Test
@@ -51,7 +55,7 @@ class TickRepositorySpringIT extends AbstractRedisTest {
                 .expectNext(false)
                 .verifyComplete();
 
-        StepVerifier.create(redisStringTemplate.opsForZSet().score("ticks:processed", "123"))
+        StepVerifier.create(redisStringTemplate.opsForZSet().score("assets-sync:ticks:processed", "123"))
                 .expectNext((double) 123)
                 .verifyComplete();
     }

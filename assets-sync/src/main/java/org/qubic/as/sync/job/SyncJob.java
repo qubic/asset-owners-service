@@ -16,19 +16,22 @@ public class SyncJob {
     private final CoreApiService coreService;
     private final EventApiService eventService;
     private final TickRepository tickRepository;
+    private final EventsProcessor eventsProcessor;
 
-    public SyncJob(CoreApiService coreService, EventApiService eventService, TickRepository tickRepository) {
+    public SyncJob(CoreApiService coreService, EventApiService eventService, TickRepository tickRepository, EventsProcessor eventsProcessor) {
         this.coreService = coreService;
         this.eventService = eventService;
         this.tickRepository = tickRepository;
+        this.eventsProcessor = eventsProcessor;
     }
 
     public Mono<Long> sync() {
         return getLatestAvailableTick()
                 .flatMap(this::calculateStartAndEndTick)
                 .flatMapMany(this::calculateSyncRange)
-                .doOnNext(tickNumber -> log.debug("Syncing tick [{}].", tickNumber))
+                .doOnNext(tickNumber -> log.debug("Syncing tick [{}]...", tickNumber))
                 .concatMap(this::processTick)
+                .doOnNext(nr -> log.info("Synced tick [{}].", nr))
                 // takeLast(1).next() behaves like last() but emits empty instead of no such element error
                 .takeLast(1).next()
                 .flatMap(this::updateLatestSyncedTick); // skipped if error or empty
@@ -38,11 +41,12 @@ public class SyncJob {
         return tickRepository.isProcessedTick(tickNumber)
                 .flatMap(alreadyProcessed -> alreadyProcessed
                         ? Mono.just(tickNumber).doOnNext(n -> log.debug("Skipping already stored tick [{}].", n))
-                        : processNewTick(tickNumber));
+                        : processNewTick(tickNumber).flatMap(nr -> tickRepository.addToProcessedTicks(nr).map(x -> tickNumber)));
     }
 
     private Mono<Long> processNewTick(Long tickNumber) {
-        return Mono.just(tickNumber); // FIXME
+        return eventService.getTickEvents(tickNumber)
+                .flatMap(events -> eventsProcessor.process(tickNumber, events));
     }
 
     private Flux<Long> calculateSyncRange(Tuple2<Long, Long> startAndEndTick) {
