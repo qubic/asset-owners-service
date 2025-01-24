@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import reactor.test.StepVerifier;
 
-import static org.qubic.as.sync.repository.AssetChangeMessageQueue.KEY_QUEUE;
+import static org.qubic.as.sync.repository.AssetIssuanceMessageQueue.KEY_QUEUE;
 
 class AssetIssuanceMessageQueueSpringIT extends AbstractRedisTest {
 

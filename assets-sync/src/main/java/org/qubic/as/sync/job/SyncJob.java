@@ -27,7 +27,7 @@ public class SyncJob {
 
     public Mono<Long> sync() {
         return getLatestAvailableTick()
-                .flatMap(this::calculateStartAndEndTick)
+                .flatMap(this::calculateStartAndEndTick) // TODO add switch to allow syncing below initial tick
                 .flatMapMany(this::calculateSyncRange)
                 .doOnNext(tickNumber -> log.debug("Syncing tick [{}]...", tickNumber))
                 .concatMap(this::processTick)

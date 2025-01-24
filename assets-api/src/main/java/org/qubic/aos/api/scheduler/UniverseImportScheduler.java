@@ -39,7 +39,7 @@ public class UniverseImportScheduler {
         Path importDir = Files.createDirectories(Path.of(IMPORT_DIR_NAME));
         log.info("Import directory name: [{}]", importDir);
         Path importedDir = Files.createDirectories(Path.of(IMPORTED_DIR_NAME));
-        log.info("Imported directory name: [{}[", importedDir);
+        log.info("Imported directory name: [{}]", importedDir);
     }
 
     @Scheduled(cron = "${scheduler.import.universe.cron}")

@@ -2,8 +2,6 @@ package org.qubic.aos.api.scheduler;
 
 import org.junit.jupiter.api.Test;
 import org.qubic.aos.api.redis.repository.QueueProcessingRepository;
-import org.qubic.aos.api.scheduler.mapping.RedisToDomainMapper;
-import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
@@ -11,69 +9,54 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings("unchecked")
-class QueueProcessorTest<T, S> {
+class QueueProcessorTest<S> {
 
     protected final QueueProcessingRepository<S> redisRepository;
-    protected final CrudRepository<T, Long> repository;
-    protected final RedisToDomainMapper<T, S> mapper;
-    protected final QueueProcessor<T, S> processor;
+    protected final QueueProcessor<S> processor;
 
     public QueueProcessorTest() {
         this.redisRepository = mock();
-        this.repository = mock();
-        this.mapper = mock();
-        processor = new QueueProcessor<>(redisRepository, repository, mapper) { };
+        processor = new QueueProcessor<>(redisRepository) {
+            @Override
+            protected void processQueueItem(S item) {
+                // empty
+            }
+        };
     }
 
     @Test
     void process_thenSaveAndReturnDto() {
-        S redisDto = createSourceMock();
-        T targetDto = createTargetMock();
+        S dto = createSourceMock();
 
-        when(redisRepository.readFromQueue()).thenReturn(redisDto, (S) null);
-        when(mapper.map(redisDto)).thenReturn(targetDto);
-        when(repository.save(targetDto)).thenReturn(targetDto);
+        when(redisRepository.readFromQueue()).thenReturn(dto, (S) null);
 
-        List<T> targetDtos = processor.process();
-        assertThat(targetDtos).contains(targetDto);
+        List<S> targetDtos = processor.processQueue();
+        assertThat(targetDtos).contains(dto);
 
-        verify(redisRepository).removeFromProcessingQueue(redisDto);
+        verify(redisRepository).removeFromProcessingQueue(dto);
         verify(redisRepository, never()).pushIntoErrorsQueue(any());
     }
 
     @Test
-    void process_givenMappingError_thenMoveIntoErrorQueue() {
-        S redisDto = createSourceMock();
+    void process_givenError_thenMoveIntoErrorQueue() {
+        QueueProcessor<S> processor = new QueueProcessor<>(redisRepository) {
+            @Override
+            protected void processQueueItem(S item) {
+                throw new RuntimeException("test");
+            }
+        };
+        S dto = createSourceMock();
 
-        when(redisRepository.readFromQueue()).thenReturn(redisDto, (S) null);
-        when(mapper.map(redisDto)).thenThrow(new RuntimeException("exception for test"));
+        when(redisRepository.readFromQueue()).thenReturn(dto, (S) null);
 
-        List<T> targetDtos = processor.process();
+        List<S> targetDtos = processor.processQueue();
         assertThat(targetDtos).isEmpty();
 
-        verifyNoInteractions(repository);
-        verify(redisRepository).pushIntoErrorsQueue(redisDto);
-        verify(redisRepository).removeFromProcessingQueue(redisDto);
-    }
-
-    @Test
-    void process_givenDatabaseError_thenMoveIntoErrorQueue() {
-        S redisDto = createSourceMock();
-        T targetDto = createTargetMock();
-
-        when(redisRepository.readFromQueue()).thenReturn(redisDto, (S) null);
-        when(mapper.map(redisDto)).thenReturn(targetDto);
-        when(repository.save(targetDto)).thenThrow(new RuntimeException("exception for test"));
-
-        List<T> targetDtos = processor.process();
-        assertThat(targetDtos).isEmpty();
-
-        verify(redisRepository).pushIntoErrorsQueue(redisDto);
-        verify(redisRepository).removeFromProcessingQueue(redisDto);
+        verify(redisRepository).pushIntoErrorsQueue(dto);
+        verify(redisRepository).removeFromProcessingQueue(dto);
     }
 
     // needed to create source and targets with correct type
-    protected T createTargetMock() { return mock(); }
     protected S createSourceMock() { return mock(); }
 
 }

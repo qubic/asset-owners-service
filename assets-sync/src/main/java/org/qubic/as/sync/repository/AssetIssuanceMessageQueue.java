@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class AssetIssuanceMessageQueue {
 
-    static final String KEY_QUEUE = "asset-sync:queue:asset-changes";
+    static final String KEY_QUEUE = "assets-service:queue:asset-issuances";
     private final ReactiveRedisTemplate<String, AssetIssuanceMessage> redisTemplate;
 
     public AssetIssuanceMessageQueue(ReactiveRedisTemplate<String, AssetIssuanceMessage> assetChangeTemplate) {

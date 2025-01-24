@@ -17,6 +17,15 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.qubic</groupId>
+            <artifactId>assets-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>at.qubic</groupId>
+            <artifactId>qubicj-computor-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
@@ -85,11 +94,6 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>at.qubic</groupId>
-            <artifactId>qubicj-computor-api</artifactId>
         </dependency>
 
         <!-- test dependencies -->
