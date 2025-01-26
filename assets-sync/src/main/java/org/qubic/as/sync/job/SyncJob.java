@@ -30,9 +30,9 @@ public class SyncJob {
                 .flatMap(this::calculateStartAndEndTick) // TODO add switch to allow syncing below initial tick
                 .flatMapMany(this::calculateSyncRange)
                 .doOnNext(tickNumber -> log.debug("Syncing tick [{}]...", tickNumber))
-                .concatMap(this::processTick)
+                .concatMap(this::processTick) // sequential because asset transfers should be processed in right order
                 .doOnNext(nr -> log.info("Synced tick [{}].", nr))
-                // takeLast(1).next() behaves like last() but emits empty instead of no such element error
+                // takeLast(1).next() behaves like last() with empty instead of error
                 .takeLast(1).next()
                 .flatMap(this::updateLatestSyncedTick); // skipped if error or empty
     }
@@ -52,11 +52,12 @@ public class SyncJob {
     private Flux<Long> calculateSyncRange(Tuple2<Long, Long> startAndEndTick) {
         long startTick = startAndEndTick.getT1();
         long endTick = startAndEndTick.getT2(); // we could do +1 here because end tick is exclusive but we better wait one tick
-        int numberOfTicks = (int) (endTick - startTick); // we don't sync the latest tick (integration api might still be behind)
+        // limit batch per run to 1000 ticks
+        int numberOfTicks = Math.min(1_000, (int) (endTick - startTick)); // we don't sync the latest tick (integration api might still be behind)
         if (numberOfTicks > 0) {
             if (numberOfTicks > 1) {
                 if (numberOfTicks > 5) {
-                    log.info("Syncing range from tick [{}] (incl) to [{}] (excl). Number of ticks: [{}].", startTick, endTick, numberOfTicks);
+                    log.info("Syncing range from tick [{}] (incl) to [{}] (excl). Next batch: [{}] ticks.", startTick, endTick, numberOfTicks);
                 }
                 return Flux.range(0, numberOfTicks).map(counter -> startTick + counter);
             } else {
