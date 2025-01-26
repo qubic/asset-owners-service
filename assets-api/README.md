@@ -79,3 +79,7 @@ If you want to access secured endpoints (like prometheus metrics) you need to au
 spring.security.user.name=...
 spring.security.user.password=...
 ```
+
+## API
+
+See [OpenAPI descriptions](api-docs.yaml).

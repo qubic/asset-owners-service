@@ -1,0 +1,43 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://localhost:8083
+    description: Generated server url
+paths:
+  /service/v1/issuers/{issuer}/assets/{asset}/owners:
+    get:
+      tags:
+        - asset-owners-controller
+      operationId: getTopAssetOwners
+      parameters:
+        - name: issuer
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: asset
+          in: path
+          required: true
+          schema:
+            pattern: "^[A-Z0-9]{1,7}$"
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AmountPerEntityDto"
+components:
+  schemas:
+    AmountPerEntityDto:
+      type: object
+      properties:
+        identity:
+          type: string
+        amount:
+          type: integer
