@@ -5,6 +5,7 @@ import org.qubic.aos.api.db.AssetsDbService;
 import org.qubic.aos.api.db.EntitiesDbService;
 import org.qubic.aos.api.owners.TransferAssetsService;
 import org.qubic.aos.api.owners.UniverseCsvImporter;
+import org.qubic.aos.api.redis.AssetsCacheManager;
 import org.qubic.aos.api.redis.repository.AssetChangeMessageReader;
 import org.qubic.aos.api.redis.repository.AssetIssuanceMessageReader;
 import org.qubic.aos.api.scheduler.AssetChangeProcessor;
@@ -42,8 +43,10 @@ public class SchedulerConfiguration {
     }
 
     @Bean
-    AssetChangeProcessor assetChangeProcessor(AssetChangeMessageReader assetChangeMessageReader, TransferAssetsService transferAssetsService) {
-        return new AssetChangeProcessor(assetChangeMessageReader, transferAssetsService);
+    AssetChangeProcessor assetChangeProcessor(AssetChangeMessageReader assetChangeMessageReader,
+                                              TransferAssetsService transferAssetsService,
+                                              AssetsCacheManager assetsCacheManager) {
+        return new AssetChangeProcessor(assetChangeMessageReader, transferAssetsService, assetsCacheManager);
     }
 
     @Bean
