@@ -20,16 +20,14 @@ public class RedisSyncScheduler {
     }
 
     @Scheduled(cron = "${scheduler.sync.cron}")
-    void processTradesAndTransactions() {
+    void processSyncQueues() {
         log.debug("Running data synchronization...");
 
-        // TODO test
         List<AssetIssuanceMessage> issuanceMessages = assetIssuanceProcessor.processQueue();
         if (CollectionUtils.size(issuanceMessages) > 0) {
             log.info("Processed [{}] asset issuance messages", issuanceMessages.size());
         }
 
-        // TODO test
         List<AssetChangeMessage> assetChangeMessages = assetChangeProcessor.processQueue();
         if (CollectionUtils.size(issuanceMessages) > 0) {
             log.info("Processed [{}] asset change messages.", assetChangeMessages.size());
