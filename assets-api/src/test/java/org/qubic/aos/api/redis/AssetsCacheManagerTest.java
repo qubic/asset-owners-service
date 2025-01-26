@@ -13,11 +13,21 @@ class AssetsCacheManagerTest {
     private final AssetsCacheManager assetsCacheManager = new AssetsCacheManager(cacheManager);
 
     @Test
-    void clearAssetOwnersCache() {
+    void clearAssetOwnersCacheForAsset() {
         Cache cache = mock();
+        when(cache.getName()).thenReturn("cache-name");
         when(cacheManager.getCache(CACHE_NAME_ASSET_OWNERS)).thenReturn(cache);
-        assetsCacheManager.clearAssetOwnersCache("issuer", "assetName");
+        assetsCacheManager.clearAssetOwnersCacheForAsset("issuer", "assetName");
         verify(cache).evict("issuer:assetName");
+    }
+
+    @Test
+    void clearAssetOwnersCacheForAllAssets() {
+        Cache cache = mock();
+        when(cache.getName()).thenReturn("cache-name");
+        when(cacheManager.getCache(CACHE_NAME_ASSET_OWNERS)).thenReturn(cache);
+        assetsCacheManager.clearAssetOwnersCacheForAllAssets();
+        verify(cache).clear();
     }
 
 }

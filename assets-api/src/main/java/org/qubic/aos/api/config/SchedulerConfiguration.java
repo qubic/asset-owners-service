@@ -26,8 +26,9 @@ public class SchedulerConfiguration {
 
     @Bean
     UniverseCsvImporter universeCsvImporter(ValidationUtility validationUtility, EntitiesDbService entitiesDbService,
-                                            AssetsDbService assetsDbService, AssetOwnersRepository assetOwnersRepository) {
-        return new UniverseCsvImporter(validationUtility, entitiesDbService, assetsDbService, assetOwnersRepository);
+                                            AssetsDbService assetsDbService, AssetOwnersRepository assetOwnersRepository,
+                                            AssetsCacheManager assetsCacheManager) {
+        return new UniverseCsvImporter(validationUtility, entitiesDbService, assetsDbService, assetOwnersRepository, assetsCacheManager);
     }
 
     @Bean

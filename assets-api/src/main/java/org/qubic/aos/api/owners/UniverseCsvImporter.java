@@ -11,6 +11,7 @@ import org.qubic.aos.api.db.EntitiesDbService;
 import org.qubic.aos.api.db.domain.AssetOwner;
 import org.qubic.aos.api.db.domain.Entity;
 import org.qubic.aos.api.owners.exception.CsvImportException;
+import org.qubic.aos.api.redis.AssetsCacheManager;
 import org.qubic.aos.api.validation.ValidationError;
 import org.qubic.aos.api.validation.ValidationUtility;
 
@@ -28,12 +29,18 @@ public class UniverseCsvImporter {
     private final EntitiesDbService entitiesDbService;
     private final AssetsDbService assetsDbService;
     private final AssetOwnersRepository assetOwnersRepository;
+    private final AssetsCacheManager assetsCacheManager;
 
-    public UniverseCsvImporter(ValidationUtility validationUtility, EntitiesDbService entitiesDbService, AssetsDbService assetsDbService, AssetOwnersRepository assetOwnersRepository) {
+    public UniverseCsvImporter(ValidationUtility validationUtility,
+                               EntitiesDbService entitiesDbService,
+                               AssetsDbService assetsDbService,
+                               AssetOwnersRepository assetOwnersRepository,
+                               AssetsCacheManager assetsCacheManager) {
         this.validationUtility = validationUtility;
         this.entitiesDbService = entitiesDbService;
         this.assetsDbService = assetsDbService;
         this.assetOwnersRepository = assetOwnersRepository;
+        this.assetsCacheManager = assetsCacheManager;
     }
 
     public List<AssetOwner> importAssetOwners(Reader input) throws IOException {
@@ -48,7 +55,8 @@ public class UniverseCsvImporter {
         } else {
             log.warn("No asset owners in import file. Not updating database.");
         }
-
+        log.info("Clearing caches for asset owners.");
+        assetsCacheManager.clearAssetOwnersCacheForAllAssets();
         return assetOwners;
     }
 

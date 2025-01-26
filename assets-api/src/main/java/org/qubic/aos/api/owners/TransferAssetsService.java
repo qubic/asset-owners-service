@@ -26,8 +26,6 @@ public class TransferAssetsService {
     private final AssetOwnersRepository assetOwnersRepository;
     private final ValidationUtility validationUtility;
 
-    // FIXME add cache manager and evict on import
-
     public TransferAssetsService(AssetsDbService assetsRepository, EntitiesDbService entitiesRepository, AssetOwnersRepository assetOwnersRepository, ValidationUtility validationUtility) {
         this.assetsDbService = assetsRepository;
         this.entitiesDbService = entitiesRepository;

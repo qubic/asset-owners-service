@@ -9,6 +9,7 @@ import org.qubic.aos.api.db.domain.Asset;
 import org.qubic.aos.api.db.domain.AssetOwner;
 import org.qubic.aos.api.db.domain.Entity;
 import org.qubic.aos.api.owners.exception.CsvImportException;
+import org.qubic.aos.api.redis.AssetsCacheManager;
 import org.qubic.aos.api.validation.ValidationError;
 import org.qubic.aos.api.validation.ValidationUtility;
 
@@ -29,7 +30,9 @@ class UniverseCsvImporterTest {
     private final EntitiesDbService entitiesDbService = mock();
     private final AssetsDbService assetsDbService = mock();
     private final AssetOwnersRepository assetOwnersRepository = mock();
-    private final UniverseCsvImporter importer = new UniverseCsvImporter(validationUtility, entitiesDbService, assetsDbService, assetOwnersRepository);
+    private final AssetsCacheManager assetsCacheManager = mock();
+
+    private final UniverseCsvImporter importer = new UniverseCsvImporter(validationUtility, entitiesDbService, assetsDbService, assetOwnersRepository, assetsCacheManager);
 
     @BeforeEach
     void initMocks() {
@@ -74,6 +77,7 @@ class UniverseCsvImporterTest {
         verify(assetsDbService, times(3)).getOrCreateAsset(anyString(), anyString()); // cached
         verify(assetOwnersRepository).deleteAll();
         verify(assetOwnersRepository).saveAll(anyList());
+        verify(assetsCacheManager).clearAssetOwnersCacheForAllAssets();
     }
 
     @Test
@@ -98,6 +102,7 @@ class UniverseCsvImporterTest {
         verifyNoInteractions(entitiesDbService);
         verifyNoInteractions(assetsDbService);
         verifyNoInteractions(assetOwnersRepository);
+        verifyNoInteractions(assetsCacheManager);
     }
 
 }

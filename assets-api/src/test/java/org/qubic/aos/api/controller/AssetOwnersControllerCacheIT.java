@@ -35,10 +35,10 @@ public class AssetOwnersControllerCacheIT extends AbstractSpringIntegrationTest 
 
     @Test
     void getTopAssetOwners_givenCacheEvicted_thenHitServiceAgain() {
-        cacheManager.clearAssetOwnersCache(ISSUER, ASSET);
+        cacheManager.clearAssetOwnersCacheForAsset(ISSUER, ASSET);
         assetOwnersController.getTopAssetOwners(ISSUER, ASSET);
         assetOwnersController.getTopAssetOwners(ISSUER, ASSET);
-        cacheManager.clearAssetOwnersCache(ISSUER, ASSET);
+        cacheManager.clearAssetOwnersCacheForAsset(ISSUER, ASSET);
         assetOwnersController.getTopAssetOwners(ISSUER, ASSET);
 
         verify(assetOwnersService, times(2)).getTopAssetOwners(ISSUER, ASSET);

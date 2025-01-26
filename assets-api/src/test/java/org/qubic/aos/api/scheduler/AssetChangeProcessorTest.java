@@ -31,7 +31,7 @@ class AssetChangeProcessorTest {
         AssetChangeMessage message = new AssetChangeMessage("source", "destination", "issuer",
                 "assetName", 1, "transactionHash", 42, EventType.ASSET_OWNERSHIP_CHANGE.getCode());
         processor.processQueueItem(message);
-        verify(assetsCacheManager).clearAssetOwnersCache("issuer", "assetName");
+        verify(assetsCacheManager).clearAssetOwnersCacheForAsset("issuer", "assetName");
     }
 
     @Test

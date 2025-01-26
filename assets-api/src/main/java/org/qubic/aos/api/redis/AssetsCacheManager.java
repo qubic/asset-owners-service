@@ -1,9 +1,10 @@
 package org.qubic.aos.api.redis;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
-import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 public class AssetsCacheManager {
@@ -29,9 +30,24 @@ public class AssetsCacheManager {
         this.cacheManager = cacheManager;
     }
 
-    public void clearAssetOwnersCache(String issuer, String name) {
-        log.debug("Evicting cache for asset with issuer [{}] and name [{}].", issuer, name);
-        Objects.requireNonNull(cacheManager.getCache(CACHE_NAME_ASSET_OWNERS)).evict(String.format("%s:%s", issuer, name));
+    public void clearAssetOwnersCacheForAsset(String issuer, String name) {
+        getCache(CACHE_NAME_ASSET_OWNERS).ifPresent(c -> {
+            String key = String.format("%s:%s", issuer, name);
+            log.debug("Evicting cache [{}] for key [{}].", c.getName(), key);
+            c.evict(key);
+        });
+    }
+
+    public void clearAssetOwnersCacheForAllAssets() {
+        getCache(CACHE_NAME_ASSET_OWNERS).ifPresent(c -> {
+            log.debug("Clearing cache [{}].", c.getName());
+            c.clear();
+        });
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private Optional<Cache> getCache(String name) {
+        return Optional.ofNullable(cacheManager.getCache(name));
     }
 
 }

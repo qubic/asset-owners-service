@@ -23,7 +23,7 @@ public class AssetChangeProcessor extends QueueProcessor<AssetChangeMessage> {
     protected void processQueueItem(AssetChangeMessage item) {
         if (item.eventType() == EventType.ASSET_OWNERSHIP_CHANGE.getCode()) {
             transferAssetsService.transfer(item.source(), item.destination(), item.issuer(), item.assetName(), item.numberOfShares());
-            assetsCacheManager.clearAssetOwnersCache(item.issuer(), item.assetName());
+            assetsCacheManager.clearAssetOwnersCacheForAsset(item.issuer(), item.assetName());
         } else {
             throw new IllegalArgumentException("Invalid event type: " + item.eventType());
         }
