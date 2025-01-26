@@ -14,12 +14,12 @@ public class AssetsCacheManager {
     /**
      * This cache is used for internal db access. We don't need to clear it because assets do not get removed.
      */
-    public static final String CACHE_NAME_GET_ASSET =  "cache:asset:db";
+    public static final String CACHE_NAME_GET_ASSET =  "cache:as:db:asset";
 
     /**
      * This cache is for api access. Needs to be cleared for one asset if the owners change.
      */
-    public static final String CACHE_NAME_ASSET_OWNERS = "cache:asset-owners:api";
+    public static final String CACHE_NAME_ASSET_OWNERS = "cache:as:api:asset-owners";
 
     /**
      * Key for an asset related cache entry.

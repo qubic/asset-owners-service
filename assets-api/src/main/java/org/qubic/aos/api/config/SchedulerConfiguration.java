@@ -13,7 +13,6 @@ import org.qubic.aos.api.scheduler.AssetIssuanceProcessor;
 import org.qubic.aos.api.scheduler.RedisSyncScheduler;
 import org.qubic.aos.api.scheduler.UniverseImportScheduler;
 import org.qubic.aos.api.validation.ValidationUtility;
-import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -32,9 +31,9 @@ public class SchedulerConfiguration {
     }
 
     @Bean
-    UniverseImportScheduler universeImportScheduler(UniverseCsvImporter universeCsvImporter, CacheManager cacheManager)
+    UniverseImportScheduler universeImportScheduler(UniverseCsvImporter universeCsvImporter)
             throws IOException {
-        return new UniverseImportScheduler(universeCsvImporter, cacheManager);
+        return new UniverseImportScheduler(universeCsvImporter);
     }
 
     @Bean
