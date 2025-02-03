@@ -63,10 +63,10 @@ public class SyncJob {
             } else {
                 return Flux.just(startTick);
             }
-        } else if (numberOfTicks < 0) {
-            log.warn("Not syncing. Invalid sync range. From tick [{}] to tick [{}].", startTick, endTick);
-            return Flux.empty();
         } else {
+            if (numberOfTicks < -3) { // don't log small deviations
+                log.warn("Ignoring negative sync range from tick [{}] to tick [{}].", startTick, endTick);
+            }
             log.debug("Nothing to sync... start [{}], end [{}]", startTick, endTick);
             return Flux.empty();
         }
