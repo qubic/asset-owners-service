@@ -16,13 +16,15 @@ import java.time.Duration;
 @Slf4j
 public class IntegrationEventApiService implements EventApiService {
 
-    private static final int NUM_RETRIES = 3;
+    private final int retries;
     private final WebClient webClient;
     private final IlEventMapper mapper;
 
-    public IntegrationEventApiService(WebClient webClient, IlEventMapper mapper) {
+    public IntegrationEventApiService(WebClient webClient, IlEventMapper mapper, int retries) {
         this.webClient = webClient;
         this.mapper = mapper;
+        log.info("Number of retries: [{}]", retries);
+        this.retries = retries;
     }
 
     @Override
@@ -49,8 +51,8 @@ public class IntegrationEventApiService implements EventApiService {
                 .retryWhen(retrySpec());
     }
 
-    private static RetryBackoffSpec retrySpec() {
-        return Retry.backoff(NUM_RETRIES, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
+    private RetryBackoffSpec retrySpec() {
+        return Retry.backoff(retries, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
     }
 
     private static EmptyResultException emptyGetEventsResult(long tick) {

@@ -63,6 +63,9 @@ public class SyncJob {
             } else {
                 return Flux.just(startTick);
             }
+        } else if (numberOfTicks < 0) {
+            log.warn("Not syncing. Invalid sync range. From tick [{}] to tick [{}].", startTick, endTick);
+            return Flux.empty();
         } else {
             log.debug("Nothing to sync... start [{}], end [{}]", startTick, endTick);
             return Flux.empty();
@@ -71,10 +74,11 @@ public class SyncJob {
 
     private Mono<Tuple2<Long, Long>> calculateStartAndEndTick(Tuple2<TickInfo, Long> tuple) {
         return tickRepository.getLatestSyncedTick()
+                // calculate start tick
                 .map(latestStoredTick -> latestStoredTick < tuple.getT1().initialTick()
-                        ? tuple.getT1().initialTick()
-                        : latestStoredTick + 1)
-                // take the lowest common tick where event data is available (most probably always getT2())
+                        ? tuple.getT1().initialTick() // take initial tick if no earlier ticks are available
+                        : latestStoredTick + 1) // take latest stored tick plus one as next tick
+                // take the lowest common tick where event data is available as end tick (either node tick or event node tick)
                 .map(startTick -> Tuples.of(startTick, Math.min(tuple.getT1().tick(), tuple.getT2())));
     }
 

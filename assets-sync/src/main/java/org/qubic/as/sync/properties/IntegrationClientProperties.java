@@ -9,5 +9,6 @@ public class IntegrationClientProperties {
     private String host;
     private String port;
     private String path;
+    private int retries;
 
 }

@@ -17,13 +17,15 @@ import java.time.Duration;
 public class IntegrationCoreApiService implements CoreApiService {
 
     private static final String CORE_BASE_PATH_V1 = "/v1/core";
-    private static final int NUM_RETRIES = 3;
+    private final int retries;
     private final WebClient webClient;
     private final IlCoreMapper mapper;
 
-    public IntegrationCoreApiService(WebClient webClient, IlCoreMapper mapper) {
+    public IntegrationCoreApiService(WebClient webClient, IlCoreMapper mapper, int retries) {
         this.webClient = webClient;
         this.mapper = mapper;
+        log.info("Number of retries: [{}]", retries);
+        this.retries = retries;
     }
 
     @Override
@@ -38,8 +40,8 @@ public class IntegrationCoreApiService implements CoreApiService {
                 .retryWhen(retrySpec());
     }
 
-    private static RetryBackoffSpec retrySpec() {
-        return Retry.backoff(NUM_RETRIES, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
+    private RetryBackoffSpec retrySpec() {
+        return Retry.backoff(retries, Duration.ofSeconds(1)).doBeforeRetry(c -> log.info("Retry: [{}].", c.totalRetries() + 1));
     }
 
 }

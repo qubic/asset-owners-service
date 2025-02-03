@@ -41,29 +41,31 @@ public class IntegrationLayerConfig {
     }
 
     @Bean(name="coreClient")
-    WebClient coreApiWebClient(@Qualifier("coreClientProperties") IntegrationClientProperties properties, WebClient.Builder builder) {
+    WebClient coreApiWebClient(WebClient.Builder builder) {
         HttpClient httpClient = createHttpClient();
-        URI uri = createUri(properties);
+        URI uri = createUri(coreClientProperties());
         log.info("Integration layer core API url: {}", uri);
         return createClient(builder, httpClient, uri);
     }
 
     @Bean(name="eventClient")
-    WebClient eventApiWebClient(@Qualifier("eventClientProperties") IntegrationClientProperties properties, WebClient.Builder builder) {
+    WebClient eventApiWebClient(WebClient.Builder builder) {
         HttpClient httpClient = createHttpClient();
-        URI uri = createUri(properties);
+        URI uri = createUri(eventClientProperties());
         log.info("Integration layer event API url: {}", uri);
         return createClient(builder, httpClient, uri);
     }
 
     @Bean
     IntegrationEventApiService integrationEventApiService(@Qualifier("eventClient") WebClient webClient, IlEventMapper eventMapper) {
-        return new IntegrationEventApiService(webClient, eventMapper);
+        int retries = eventClientProperties().getRetries();
+        return new IntegrationEventApiService(webClient, eventMapper, retries);
     }
 
     @Bean
     CoreApiService integrationCoreApiService(@Qualifier("coreClient") WebClient integrationApiWebClient, IlCoreMapper ilCoreMapper) {
-        return new IntegrationCoreApiService(integrationApiWebClient, ilCoreMapper);
+        int retries = coreClientProperties().getRetries();
+        return new IntegrationCoreApiService(integrationApiWebClient, ilCoreMapper, retries);
     }
 
     // helper methods
