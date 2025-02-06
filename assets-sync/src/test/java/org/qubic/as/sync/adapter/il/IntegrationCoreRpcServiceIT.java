@@ -4,29 +4,22 @@ import org.junit.jupiter.api.Test;
 import org.qubic.as.sync.adapter.CoreApiService;
 import org.qubic.as.sync.domain.TickInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import reactor.test.StepVerifier;
 
-@SpringBootTest(properties = """
-    il.core.use-go-nodes-format=true
-    il.core.client.scheme=http
-    il.core.client.host=localhost
-    il.core.client.port=1234
-""")
-class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
+class IntegrationCoreRpcServiceIT extends AbstractIntegrationApiTest {
 
     private static final String TICK_INFO_RESPONSE = """
             {
-              "tick": 123,
-              "durationInSeconds": 1,
-              "epoch": 456,
-              "numberOfAlignedVotes": 2,
-              "numberOfMisalignedVotes": 3,
-              "initialTickOfEpoch": 99
-            }""";
+               "tickInfo": {
+                 "tick": 18990293,
+                 "duration": 2,
+                 "epoch": 147,
+                 "initialTick": 18964679
+               }
+             }""";
 
     @Autowired
     private CoreApiService apiService;
@@ -39,10 +32,10 @@ class IntegrationCoreApiServiceIT extends AbstractIntegrationApiTest {
                 .setBody(TICK_INFO_RESPONSE));
 
         StepVerifier.create(apiService.getTickInfo())
-                .expectNext(new TickInfo(456, 123, 99))
+                .expectNext(new TickInfo(147, 18990293, 18964679))
                 .verifyComplete();
 
-        assertRequest("/v1/core/getTickInfo");
+        assertRequest("/v1/tick-info");
     }
 
 }

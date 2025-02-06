@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.qubic.as.sync.adapter.CoreApiService;
 import org.qubic.as.sync.adapter.il.IntegrationCoreApiService;
+import org.qubic.as.sync.adapter.il.IntegrationCoreRpcService;
 import org.qubic.as.sync.adapter.il.IntegrationEventApiService;
 import org.qubic.as.sync.adapter.il.mapping.IlCoreMapper;
 import org.qubic.as.sync.adapter.il.mapping.IlEventMapper;
@@ -62,6 +63,14 @@ public class IntegrationLayerConfig {
         return new IntegrationEventApiService(webClient, eventMapper, retries);
     }
 
+    @ConditionalOnProperty(value = "il.core.use-go-nodes-format", havingValue = "false", matchIfMissing = true)
+    @Bean
+    CoreApiService integrationCoreRpcService(@Qualifier("coreClient") WebClient integrationApiWebClient, IlCoreMapper ilCoreMapper) {
+        int retries = coreClientProperties().getRetries();
+        return new IntegrationCoreRpcService(integrationApiWebClient, ilCoreMapper, retries);
+    }
+
+    @ConditionalOnProperty(value = "il.core.use-go-nodes-format", havingValue = "true")
     @Bean
     CoreApiService integrationCoreApiService(@Qualifier("coreClient") WebClient integrationApiWebClient, IlCoreMapper ilCoreMapper) {
         int retries = coreClientProperties().getRetries();
