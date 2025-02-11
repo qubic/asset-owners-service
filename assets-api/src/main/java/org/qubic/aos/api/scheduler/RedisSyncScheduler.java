@@ -45,7 +45,7 @@ public class RedisSyncScheduler {
     }
 
     private void updateProcessedTick(long tick) {
-        if (latestMessageTick.get() > tick) {
+        if (latestMessageTick.get() < tick) {
             latestMessageTick.lazySet(tick);
         }
     }
