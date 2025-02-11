@@ -1,5 +1,7 @@
 package org.qubic.as.sync.job;
 
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
 import lombok.extern.slf4j.Slf4j;
 import org.qubic.as.sync.adapter.CoreApiService;
 import org.qubic.as.sync.adapter.EventApiService;
@@ -10,6 +12,9 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
+
 @Slf4j
 public class SyncJob {
 
@@ -17,6 +22,11 @@ public class SyncJob {
     private final EventApiService eventService;
     private final TickRepository tickRepository;
     private final EventsProcessor eventsProcessor;
+
+    // export tick numbers as metric
+    private final AtomicLong latestSyncedTick = Objects.requireNonNull(Metrics.gauge("tick.latest", Tags.of("source", "sync"), new AtomicLong(0)));
+    private final AtomicLong latestEventTick = Objects.requireNonNull(Metrics.gauge("tick.latest", Tags.of("source", "events"), new AtomicLong(0)));
+    private final AtomicLong latestLiveTick = Objects.requireNonNull(Metrics.gauge("tick.latest", Tags.of("source", "live"), new AtomicLong(0)));
 
     public SyncJob(CoreApiService coreService, EventApiService eventService, TickRepository tickRepository, EventsProcessor eventsProcessor) {
         this.coreService = coreService;
@@ -74,6 +84,7 @@ public class SyncJob {
 
     private Mono<Tuple2<Long, Long>> calculateStartAndEndTick(Tuple2<TickInfo, Long> tuple) {
         return tickRepository.getLatestSyncedTick()
+                .doOnNext(latestSyncedTick::set)
                 // calculate start tick
                 .map(latestStoredTick -> latestStoredTick < tuple.getT1().initialTick()
                         ? tuple.getT1().initialTick() // take initial tick if no earlier ticks are available
@@ -85,6 +96,8 @@ public class SyncJob {
     private Mono<Tuple2<TickInfo, Long>> getLatestAvailableTick() {
         return Mono.zip(coreService.getTickInfo(), eventService.getLatestTick())
                 .doOnNext(tuple -> {
+                    latestLiveTick.set(tuple.getT1().tick());
+                    latestEventTick.set(tuple.getT2());
                     // log if there is a 'larger' gap between current tick and event service
                     if (Math.abs(tuple.getT1().tick() - tuple.getT2()) > 5) {
                         log.info("Current tick: [{}]. Events are available until tick [{}].",
